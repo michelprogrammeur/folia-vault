@@ -174,6 +174,18 @@ Chaque événement domaine respecte cette structure JSON :
 
 ---
 
+## i18n
+
+| Événement | Déclencheur | Consommateurs |
+|---|---|---|
+| `TranslationContributed` | Traduction soumise par un utilisateur | notification (modérateurs), gamification |
+| `TranslationValidated` | Traduction approuvée par deux locuteurs | catalogue, content, notification |
+| `TranslationRejected` | Traduction refusée | notification |
+| `LanguageActivated` | Langue atteint 90% de couverture | notification, tous les services |
+| `LanguageDeactivated` | Langue désactivée | tous les services |
+
+---
+
 ## Règles générales
 
 - Les événements sont **immuables** — ils décrivent ce qui s'est passé, jamais ce qui doit se passer

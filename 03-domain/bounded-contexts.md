@@ -32,13 +32,13 @@
 │ Historique  │     │ Défis       │     │ In-app      │
 └─────────────┘     └─────────────┘     └─────────────┘
 
-┌─────────────┐     ┌─────────────┐
-│  geo        │     │ marketplace │
-│             │     │             │
-│ Carte       │     │ Annonces    │
-│ Événements  │     │ Échanges    │
-│ Biodiversité│     │ Transactions│
-└─────────────┘     └─────────────┘
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  geo        │     │ marketplace │     │    i18n     │
+│             │     │             │     │             │
+│ Carte       │     │ Annonces    │     │ Interface   │
+│ Événements  │     │ Échanges    │     │ Traductions │
+│ Biodiversité│     │ Transactions│     │ Communauté  │
+└─────────────┘     └─────────────┘     └─────────────┘
 ```
 
 ---
@@ -248,6 +248,43 @@ catalogue  identity  social   geo    ...autres
 
 ---
 
+### i18n
+**Responsabilité** : gestion centralisée des traductions de l'interface et contributions communautaires
+
+**Deux périmètres distincts** :
+
+**1. Traductions interface (i18n technique)**
+- Labels, messages, notifications, erreurs de l'application
+- Géré via des fichiers de traduction (JSON/YAML) par langue
+- Langues prioritaires au lancement : français, anglais, espagnol, allemand, portugais
+- Outil de gestion : Crowdin ou équivalent
+
+**2. Traductions de données métier (contributions communautaires)**
+- Noms vernaculaires des espèces (dans `catalogue`)
+- Articles et guides (dans `content`)
+- Ces traductions restent dans leurs services respectifs — `i18n` ne les duplique pas
+- `i18n` fournit uniquement les outils de contribution et de validation
+
+**Entités principales** : TranslationKey, TranslationContribution, Language, TranslationReview
+**Événements émis** : TranslationContributed, TranslationValidated, LanguageActivated
+**Consommé par** : tous les services pour l'interface, `catalogue` et `content` pour les données métier
+
+**Langues et statuts** :
+
+| Statut | Signification |
+|---|---|
+| `ACTIVE` | Langue complète, disponible dans l'app |
+| `PARTIAL` | En cours de traduction, accessible en beta |
+| `COMMUNITY` | Traduction communautaire, pas encore validée |
+| `INACTIVE` | Langue désactivée |
+
+**Règles** :
+- Une langue n'est activée que si elle atteint 90% de couverture des clés critiques
+- Les traductions communautaires sont validées par deux locuteurs natifs minimum avant publication
+- Le français et l'anglais sont les langues de référence — toute nouvelle clé doit d'abord exister dans ces deux langues
+
+---
+
 ## Types de communication entre services
 
 ### Synchrone (REST / gRPC)
@@ -272,7 +309,22 @@ Utilisé pour découpler les services et garantir la résilience.
 
 | Phase | Services | Raison |
 |---|---|---|
-| MVP | catalogue, identity, collection, notification | Base indispensable |
-| V1 étendu | identification, gamification, search | Différenciants |
-| V2 | social, geo, content | Engagement et communauté |
+| MVP | catalogue, identity, collection, notification, i18n | Base indispensable |
+| V1 étendu | identification, gamification, search, media | Différenciants |
+| V2 | social, geo, content, analytics | Engagement et communauté |
 | V3 | marketplace | Monétisation |
+| V4 | audit | Sécurité avancée et modération |
+
+---
+
+## Services futurs — Notes
+
+### audit *(prévu V4)*
+**Responsabilité** : traçabilité, détection de fraude et modération centralisée
+- Audit log de toutes les actions sensibles (connexions, suppressions, modifications critiques)
+- Détection de comportements suspects (spam, abus de gamification, faux comptes)
+- Tableau de bord de modération pour l'équipe Folia
+- Centralisation des signalements de contenu et d'utilisateurs
+
+> La sécurité de base (auth, JWT, rate limiting, RBAC) est gérée par `identity` et la `gateway`.
+> Le service `audit` n'est nécessaire qu'à partir du moment où la plateforme a suffisamment d'utilisateurs pour justifier une modération active.
