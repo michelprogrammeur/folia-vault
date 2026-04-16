@@ -82,6 +82,24 @@ Géré au niveau de la gateway :
 - `.env` dans `.gitignore`
 - En production : gestionnaire de secrets (Vault, AWS Secrets Manager...)
 
+## CORS
+
+Configuration CORS sur chaque service :
+
+```typescript
+await server.register(cors, {
+  origin: process.env.ALLOWED_ORIGINS?.split(',') ?? false,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
+  credentials: true,
+})
+```
+
+- En développement : `http://localhost:3000`
+- En production : uniquement les domaines Folia explicitement listés
+- Jamais `origin: '*'` en production
+- Les services internes (inter-service) ne passent pas par CORS
+
 ## 2FA *(V1 étendu)*
 - TOTP (Google Authenticator, Authy)
 - Obligatoire pour les comptes ADMIN et MODERATOR

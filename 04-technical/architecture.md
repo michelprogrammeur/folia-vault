@@ -79,6 +79,43 @@ search      → Meilisearch
 ...
 ```
 
+## Flux de données — Exemple concret : créer une plante
+
+```
+1. Client mobile
+   POST /v1/plants { scientificName: "Monstera deliciosa", ... }
+        │
+        ▼
+2. Gateway (port 3000)
+   - Vérifie le JWT → appel synchrone vers identity
+   - Vérifie les permissions (rôle ADMIN requis)
+   - Route vers catalogue (port 3001)
+        │
+        ▼
+3. Catalogue — Interface layer
+   - PlantController.create()
+   - Validation Zod du body
+        │
+        ▼
+4. Catalogue — Application layer
+   - CreatePlantHandler.execute(command)
+   - Vérifie que l'espèce existe (SpeciesRepository)
+   - Plant.create() → émet PlantCreated
+        │
+        ▼
+5. Catalogue — Infrastructure layer
+   - PostgresPlantRepository.save()
+   - INSERT dans folia_catalogue
+        │
+        ▼
+6. Réponse HTTP 201 { plantId: "uuid" }
+        │
+        ▼ (asynchrone)
+7. Événement PlantCreated publié
+   → search (indexation)
+   → notification (si abonnements)
+```
+
 ## Ports exposés (développement local)
 
 | Service | Port |

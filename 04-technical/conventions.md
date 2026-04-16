@@ -107,6 +107,14 @@ import { PlantRepositoryPort } from '../../domain/repositories/PlantRepositoryPo
 import { PlantNotFoundError } from '../../../../shared/errors/index.js'
 ```
 
+## Migrations Drizzle
+
+- Générer une migration après chaque changement de schéma : `pnpm db:generate`
+- Ne jamais éditer manuellement un fichier de migration généré
+- Toujours vérifier le SQL généré avant de commiter
+- Une migration par feature — pas de migration fourre-tout
+- Mettre à jour `04-technical/services/<service>.md` après chaque migration
+
 ## Git
 
 - Branches : `feat/<ticket>-<description>`, `fix/<ticket>-<description>`

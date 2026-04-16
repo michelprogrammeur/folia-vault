@@ -101,6 +101,40 @@ describe('Plant', () => {
 })
 ```
 
+## Exemple concret — Test d'intégration avec Testcontainers
+
+```typescript
+// tests/integration/setup.ts
+import { PostgreSqlContainer } from '@testcontainers/postgresql'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+
+let db: Database
+
+beforeAll(async () => {
+  const container = await new PostgreSqlContainer('postgres:16').start()
+  const client = postgres(container.getConnectionUri())
+  db = drizzle(client)
+  await migrate(db, { migrationsFolder: './src/features/plant/infrastructure/database/migrations' })
+}, 30_000)
+
+export const getDb = () => db
+
+// tests/integration/PostgresPlantRepository.test.ts
+describe('PostgresPlantRepository', () => {
+  it('should save and retrieve a plant', async () => {
+    const repo = new PostgresPlantRepository(getDb())
+    const plant = makePlant('plant-1', 'Monstera deliciosa')
+
+    await repo.save(plant)
+    const found = await repo.findById(plant.id)
+
+    expect(found).not.toBeNull()
+    expect(found!.id.toString()).toBe(plant.id.toString())
+  })
+})
+```
+
 ## Helpers de test
 
 Centraliser les factories dans `tests/helpers/` :
